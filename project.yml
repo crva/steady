@@ -52,11 +52,13 @@ targets:
       properties:
         com.apple.security.application-groups:
           - group.com.crva.steady
-        com.apple.developer.icloud-container-identifiers:
-          - iCloud.com.crva.steady
-        com.apple.developer.icloud-services:
-          - CloudKit
-        aps-environment: development
+        # iCloud sync is off (FeatureFlags.iCloudSync). These need a paid Apple
+        # Developer account; restore them when enabling iCloud:
+        # com.apple.developer.icloud-container-identifiers:
+        #   - iCloud.com.crva.steady
+        # com.apple.developer.icloud-services:
+        #   - CloudKit
+        # aps-environment: development
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.crva.steady
