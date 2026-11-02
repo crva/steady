@@ -16,6 +16,9 @@ final class AppState {
         didSet { defaults.set(storageMode?.rawValue, forKey: Keys.storageMode) }
     }
 
+    /// Set when the app is opened from a widget; consumed by Home.
+    var pendingDeepLink: DeepLink?
+
     /// The current local day. Refreshed when the app becomes active or the day changes.
     private(set) var todayKey: Int = DayKey.today()
 

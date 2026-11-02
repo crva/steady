@@ -65,3 +65,67 @@ struct WidgetSnapshotTests {
         #expect(Set(PaletteColor.free).isDisjoint(with: PaletteColor.supporter))
     }
 }
+
+struct WidgetSnapshotRolloverTests {
+    private func habit(_ rules: HabitRules, _ results: [Int: EntryResult], today: Int) -> WidgetSnapshot.Habit {
+        .make(
+            id: UUID(), name: "x", emoji: "x", colorID: "blue", rules: rules,
+            entries: results.map { EntryRecord(dayKey: $0.key, result: $0.value) },
+            today: today
+        )
+    }
+
+    /// Rolled-forward stats must equal a fresh computation on the new day.
+    private func expectMatchesFresh(_ rules: HabitRules, _ results: [Int: EntryResult], from snapshotDay: Int, to today: Int) {
+        let snapshot = habit(rules, results, today: snapshotDay)
+        let fresh = HabitStats.compute(rules: rules, results: results, today: today)
+        #expect(snapshot.stats(on: today, snapshotDay: snapshotDay) == fresh)
+    }
+
+    @Test func strictPendingDayBecomesMissed() {
+        let rules = HabitRules(kind: .start, countingMode: .strict, startDay: 20261101)
+        let results = Dictionary(uniqueKeysWithValues: DayKey.days(from: 20261101, through: 20261104).map { ($0, EntryResult.success) })
+        let snapshot = habit(rules, results, today: 20261105)
+        #expect(snapshot.primaryValue == 4)
+        let rolled = snapshot.stats(on: 20261106, snapshotDay: 20261105)
+        #expect(rolled.currentStreak == 0)
+        expectMatchesFresh(rules, results, from: 20261105, to: 20261106)
+    }
+
+    @Test func doneTodayCarriesOver() {
+        let rules = HabitRules(kind: .start, countingMode: .strict, startDay: 20261101)
+        let results = Dictionary(uniqueKeysWithValues: DayKey.days(from: 20261101, through: 20261105).map { ($0, EntryResult.success) })
+        expectMatchesFresh(rules, results, from: 20261105, to: 20261106)
+        #expect(habit(rules, results, today: 20261105).stats(on: 20261106, snapshotDay: 20261105).currentStreak == 5)
+    }
+
+    @Test func stopAutoKeepsGrowing() {
+        let rules = HabitRules(kind: .stop, stopTracking: .auto, countingMode: .strict, startDay: 20261101)
+        expectMatchesFresh(rules, [20261102: .fail], from: 20261105, to: 20261108)
+    }
+
+    @Test func forgivingRateUpdates() {
+        let rules = HabitRules(kind: .start, countingMode: .forgiving, startDay: 20261101)
+        expectMatchesFresh(rules, [20261101: .success, 20261103: .fail, 20261105: .success], from: 20261105, to: 20261107)
+    }
+
+    @Test func sameDayUnchanged() {
+        let rules = HabitRules(kind: .start, startDay: 20261101)
+        let snapshot = habit(rules, [20261101: .success], today: 20261105)
+        #expect(snapshot.stats(on: 20261105, snapshotDay: 20261105) == snapshot.stats)
+    }
+}
+
+struct DeepLinkTests {
+    @Test func roundTrips() {
+        let id = UUID()
+        #expect(DeepLink(url: DeepLink.home.url) == .home)
+        #expect(DeepLink(url: DeepLink.habit(id).url) == .habit(id))
+    }
+
+    @Test func rejectsForeignURLs() {
+        #expect(DeepLink(url: URL(string: "https://example.com/home")!) == nil)
+        #expect(DeepLink(url: URL(string: "steady://habit/not-a-uuid")!) == nil)
+        #expect(DeepLink(url: URL(string: "steady://settings")!) == nil)
+    }
+}

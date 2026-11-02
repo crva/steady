@@ -39,6 +39,9 @@ targets:
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UIBackgroundModes: [remote-notification]
         ITSAppUsesNonExemptEncryption: false
+        CFBundleURLTypes:
+          - CFBundleURLName: com.crva.steady
+            CFBundleURLSchemes: [steady]
     entitlements:
       path: Steady/Steady.entitlements
       properties:

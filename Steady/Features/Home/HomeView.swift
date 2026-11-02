@@ -46,6 +46,23 @@ struct HomeView: View {
         .sheet(item: $noteTarget) { target in
             NoteEditor(target: target)
         }
+        .onChange(of: appState.pendingDeepLink, initial: true) { _, link in
+            guard let link else { return }
+            open(link)
+            appState.pendingDeepLink = nil
+        }
+    }
+
+    private func open(_ link: DeepLink) {
+        showingNewHabit = false
+        showingSettings = false
+        noteTarget = nil
+        switch link {
+        case .home:
+            path = []
+        case .habit(let id):
+            path = habits.first { $0.id == id }.map { [$0] } ?? []
+        }
     }
 
     @ViewBuilder

@@ -14,25 +14,10 @@ struct HabitCounter: View {
                 .font(.system(size: size, weight: .semibold, design: .rounded))
                 .monospacedDigit()
                 .contentTransition(.numericText())
-            label
+            Text(CounterText.label(value: value, mode: mode, successRate: stats.successRate))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
         .accessibilityElement(children: .combine)
-    }
-
-    @ViewBuilder
-    private var label: some View {
-        switch mode {
-        case .strict:
-            Text(value == 1
-                ? String(localized: "counter.streak.one", defaultValue: "day streak", comment: "After the big number, which is 1")
-                : String(localized: "counter.streak.other", defaultValue: "day streak", comment: "After the big number, which is not 1"))
-        case .forgiving:
-            Text(value == 1
-                ? String(localized: "counter.days.one", defaultValue: "day", comment: "After the big number, which is 1")
-                : String(localized: "counter.days.other", defaultValue: "days", comment: "After the big number, which is not 1"))
-                + Text(verbatim: " · \(HabitText.percent(stats.successRate))")
-        }
     }
 }

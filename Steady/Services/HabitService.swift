@@ -174,13 +174,20 @@ final class HabitService {
         return (last?.sortOrder ?? -1) + 1
     }
 
-    /// Runs after every data change. Widget snapshot (M3) and reminders (M5) hook in here.
+    /// Refreshes everything derived from the data: widget snapshot (and reminders in M5).
+    /// Also called on launch, foreground and day change.
+    func refreshDerivedState() {
+        WidgetSnapshotWriter.write(context: context)
+    }
+
+    /// Runs after every data change.
     private func didChange() {
         do {
             try context.save()
         } catch {
             assertionFailure("Save failed: \(error)")
         }
+        refreshDerivedState()
     }
 }
 

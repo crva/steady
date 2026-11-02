@@ -47,6 +47,41 @@ struct WidgetSnapshot: Codable, Hashable, Sendable {
             if today == snapshotDay { return week }
             return DayResolver.week(rules: rules, results: recentResults, today: today)
         }
+
+        /// Stats rolled forward to `today` when the snapshot is from an earlier day
+        /// (e.g. the midnight timeline entry before the app has run again).
+        func stats(on today: Int, snapshotDay: Int) -> HabitStats {
+            guard today > snapshotDay, rules.startDay <= today else { return stats }
+            var result = stats
+
+            // Remove the snapshot day's contribution; it may resolve differently now.
+            let oldIndex = DayKey.weekdayIndex(snapshotDay)
+            let oldState = week.indices.contains(oldIndex) ? week[oldIndex] : .notApplicable
+            if oldState != .notApplicable { result.trackedDays -= 1 }
+            if oldState.isResolved { result.resolvedDays -= 1 }
+            if oldState == .success {
+                result.successDays -= 1
+                result.currentStreak -= 1
+            }
+
+            // Replay from the snapshot day through today.
+            for day in DayKey.days(from: max(snapshotDay, rules.startDay), through: today) {
+                let state = DayResolver.state(of: day, rules: rules, results: recentResults, today: today)
+                if state != .notApplicable { result.trackedDays += 1 }
+                if state.isResolved { result.resolvedDays += 1 }
+                switch state {
+                case .success:
+                    result.successDays += 1
+                    result.currentStreak += 1
+                    result.bestStreak = max(result.bestStreak, result.currentStreak)
+                case .failed, .missed:
+                    result.currentStreak = 0
+                case .pending, .notApplicable:
+                    break
+                }
+            }
+            return result
+        }
     }
 
     static let empty = WidgetSnapshot(generatedAt: .distantPast, todayKey: 0, habits: [])

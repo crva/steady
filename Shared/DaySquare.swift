@@ -1,4 +1,5 @@
 import SwiftUI
+import WidgetKit
 
 /// One day cell. Color = success, muted × = failed/missed, outline = pending/future,
 /// ring = today. Optionally shows a day number and a note dot.
@@ -40,7 +41,7 @@ struct DaySquare: View {
         let rect = RoundedRectangle(cornerRadius: corner)
         switch state {
         case .success:
-            rect.fill(color)
+            rect.fill(color).widgetAccentable()
         case .failed, .missed:
             rect.fill(Color.secondary.opacity(0.18))
         case .pending:

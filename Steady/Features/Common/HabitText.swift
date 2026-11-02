@@ -20,8 +20,7 @@ enum HabitText {
     }
 
     static func percent(_ rate: Double?) -> String {
-        guard let rate else { return "–" }
-        return rate.formatted(.percent.precision(.fractionLength(0)))
+        CounterText.percent(rate)
     }
 
     static func shortDate(_ day: Int) -> String {
@@ -32,9 +31,5 @@ enum HabitText {
         DayKey.startOfDay(monthKey).formatted(.dateTime.month(.wide).year())
     }
 
-    /// Monday-first single-letter weekday symbols in the user's language.
-    static var weekdayLetters: [String] {
-        let symbols = DayKey.calendar().veryShortStandaloneWeekdaySymbols  // Sunday first
-        return Array(symbols[1...]) + [symbols[0]]
-    }
+    static var weekdayLetters: [String] { CounterText.weekdayLetters }
 }
