@@ -28,6 +28,8 @@ targets:
       - path: Steady
         excludes:
           - "Resources/Steady.storekit"
+      - path: Steady/Resources/Steady.storekit
+        buildPhase: none
       - path: Shared
     info:
       path: Steady/Info.plist
