@@ -10,6 +10,10 @@ struct RemindersSection: View {
             LabeledContent("Notifications") {
                 Text(statusText)
             }
+            // Attached to a row: `.task` on a Section inside a Form never runs.
+            .task(id: scenePhase) {
+                status = await ReminderScheduler.authorizationStatus()
+            }
             if status == .denied {
                 NotificationSettingsLink()
             }
@@ -19,9 +23,6 @@ struct RemindersSection: View {
             if status == .notDetermined {
                 Text("Steady asks for permission the first time you turn on a reminder.")
             }
-        }
-        .task(id: scenePhase) {
-            status = await ReminderScheduler.authorizationStatus()
         }
     }
 

@@ -55,12 +55,32 @@ struct HomeView: View {
             appState.reviewRequested = true
             requestReview()
         }
+        #if DEBUG
+        .task { openScreenshotScreen() }
+        #endif
         .onChange(of: appState.pendingDeepLink, initial: true) { _, link in
             guard let link else { return }
             open(link)
             appState.pendingDeepLink = nil
         }
     }
+
+    #if DEBUG
+    /// For README screenshots: launch with `-screenshotScreen detail|form|settings`.
+    private func openScreenshotScreen() {
+        switch UserDefaults.standard.string(forKey: "screenshotScreen") {
+        case "detail":
+            let withNotes = habits.first { habit in (habit.entries ?? []).contains { !$0.note.isBlank } }
+            path = (withNotes ?? habits.first).map { [$0] } ?? []
+        case "form":
+            showingNewHabit = true
+        case "settings":
+            showingSettings = true
+        default:
+            break
+        }
+    }
+    #endif
 
     private func open(_ link: DeepLink) {
         showingNewHabit = false

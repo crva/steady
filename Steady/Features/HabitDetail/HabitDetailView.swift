@@ -48,6 +48,11 @@ struct HabitDetailView: View {
         }
         .onAppear {
             if month == 0 { month = DayKey.startOfMonth(today) }
+            #if DEBUG
+            // README screenshots: `-screenshotMonthsBack 1` shows the previous month.
+            let monthsBack = UserDefaults.standard.integer(forKey: "screenshotMonthsBack")
+            if monthsBack > 0 { month = DayKey.addingMonths(-monthsBack, to: DayKey.startOfMonth(today)) }
+            #endif
         }
     }
 

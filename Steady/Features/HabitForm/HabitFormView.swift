@@ -115,6 +115,10 @@ struct HabitFormView: View {
     private var reminderSection: some View {
         Section {
             Toggle("Reminder", isOn: $draft.reminderEnabled)
+                // Attached to a row: `.task` on a Section inside a Form never runs.
+                .task {
+                    notifications = await ReminderScheduler.authorizationStatus()
+                }
             if draft.reminderEnabled {
                 DatePicker("Time", selection: $draft.reminderTime, displayedComponents: .hourAndMinute)
                 if notifications == .denied {
@@ -127,9 +131,6 @@ struct HabitFormView: View {
                     }
                 }
             }
-        }
-        .task {
-            notifications = await ReminderScheduler.authorizationStatus()
         }
         .onChange(of: draft.reminderEnabled) { _, enabled in
             // Ask the first time a reminder is turned on, never at launch.
