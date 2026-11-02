@@ -10,7 +10,6 @@ struct DataSection: View {
 
     @Environment(StorageController.self) private var storage
     @State private var busy: Job?
-    @State private var shareItem: ShareItem?
     @State private var choosingFile = false
     @State private var pendingBackup: Backup?
     @State private var message: String?
@@ -28,12 +27,6 @@ struct DataSection: View {
             }
         } header: {
             Text("Data")
-        }
-        .sheet(item: $shareItem, onDismiss: { busy = nil }) { item in
-            ActivityView(url: item.url)
-                .presentationDetents([.medium, .large])
-                .ignoresSafeArea()
-                .onAppear { busy = nil }
         }
         .fileImporter(isPresented: $choosingFile, allowedContentTypes: [.json]) { result in
             read(result)
@@ -82,7 +75,8 @@ struct DataSection: View {
             try? await Task.sleep(for: .milliseconds(50))
             do {
                 let url = try ExportFiles.write(kind, context: storage.container.mainContext)
-                shareItem = ShareItem(url: url)
+                SharePresenter.share(url)
+                busy = nil
             } catch {
                 busy = nil
                 message = error.localizedDescription
