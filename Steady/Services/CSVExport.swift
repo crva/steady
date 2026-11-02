@@ -50,22 +50,26 @@ enum CSVExport {
 /// Writes export files to a temporary folder for sharing.
 @MainActor
 enum ExportFiles {
-    struct Files {
-        let json: URL
-        let csv: URL
+    enum Kind: Hashable {
+        case json
+        case csv
     }
 
-    static func write(context: ModelContext, today: Int = DayKey.today()) throws -> Files {
+    static func write(_ kind: Kind, context: ModelContext, today: Int = DayKey.today()) throws -> URL {
         let backup = Backup(context: context)
         let directory = URL.temporaryDirectory.appendingPathComponent("Exports", isDirectory: true)
-        try? FileManager.default.removeItem(at: directory)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 
         let stamp = CSVExport.isoDate(today)
-        let json = directory.appendingPathComponent("Steady Backup \(stamp).json")
-        let csv = directory.appendingPathComponent("Steady \(stamp).csv")
-        try backup.encoded().write(to: json, options: .atomic)
-        try Data(CSVExport.make(from: backup, today: today).utf8).write(to: csv, options: .atomic)
-        return Files(json: json, csv: csv)
+        switch kind {
+        case .json:
+            let url = directory.appendingPathComponent("Steady Backup \(stamp).json")
+            try backup.encoded().write(to: url, options: .atomic)
+            return url
+        case .csv:
+            let url = directory.appendingPathComponent("Steady \(stamp).csv")
+            try Data(CSVExport.make(from: backup, today: today).utf8).write(to: url, options: .atomic)
+            return url
+        }
     }
 }

@@ -19,6 +19,9 @@ struct RootView: View {
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
             refresh()
         }
+        .task {
+            await storage.moveOffICloudIfDisabled()
+        }
         .onOpenURL { url in
             appState.pendingDeepLink = DeepLink(url: url)
         }

@@ -8,14 +8,15 @@ struct StorageSection: View {
     var body: some View {
         Section {
             ForEach(StorageMode.allCases, id: \.self) { mode in
+                let enabled = mode == .local || storage.isICloudOffered
                 Button {
                     if mode != storage.activeMode { pendingMode = mode }
                 } label: {
-                    StorageOptionRow(mode: mode, isSelected: mode == storage.activeMode)
+                    StorageOptionRow(mode: mode, isSelected: mode == storage.activeMode, isEnabled: enabled)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .disabled(storage.isMigrating)
+                .disabled(storage.isMigrating || !enabled)
             }
             if storage.isMigrating {
                 HStack(spacing: 12) {

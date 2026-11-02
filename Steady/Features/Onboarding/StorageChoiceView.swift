@@ -15,19 +15,22 @@ struct StorageChoiceView: View {
                 .foregroundStyle(.secondary)
             VStack(spacing: 12) {
                 ForEach(StorageMode.allCases, id: \.self) { mode in
+                    let enabled = mode == .local || storage.isICloudOffered
+                    let recommended = mode == (storage.isICloudOffered ? .iCloud : .local)
                     Button {
                         choose(mode)
                     } label: {
-                        StorageOptionRow(mode: mode)
+                        StorageOptionRow(mode: mode, isEnabled: enabled)
                             .padding(16)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .strokeBorder(mode == .iCloud ? Color.primary : Color(.separator), lineWidth: mode == .iCloud ? 2 : 1)
+                                    .strokeBorder(recommended ? Color.primary : Color(.separator), lineWidth: recommended ? 2 : 1)
                             )
                             .contentShape(.rect(cornerRadius: 16))
                     }
                     .buttonStyle(.plain)
+                    .disabled(!enabled)
                 }
             }
             Spacer()

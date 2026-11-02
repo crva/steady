@@ -4,6 +4,7 @@ import SwiftUI
 struct StorageOptionRow: View {
     let mode: StorageMode
     var isSelected = false
+    var isEnabled = true
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -17,6 +18,11 @@ struct StorageOptionRow: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+                if !isEnabled {
+                    Text("Not available yet")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
             }
             Spacer(minLength: 0)
             if isSelected {
@@ -24,13 +30,14 @@ struct StorageOptionRow: View {
                     .font(.headline)
             }
         }
+        .opacity(isEnabled ? 1 : 0.4)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     private var title: String {
         switch mode {
-        case .iCloud: String(localized: "iCloud (recommended)")
+        case .iCloud: FeatureFlags.iCloudSync ? String(localized: "iCloud (recommended)") : String(localized: "iCloud")
         case .local: String(localized: "On this iPhone only")
         }
     }

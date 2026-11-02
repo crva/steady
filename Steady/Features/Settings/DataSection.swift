@@ -1,36 +1,41 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Export (JSON backup, CSV) and JSON import.
+/// Export (JSON backup, CSV) and JSON import, each with a busy state.
 struct DataSection: View {
+    private enum Job: Hashable {
+        case export(ExportFiles.Kind)
+        case importing
+    }
+
     @Environment(StorageController.self) private var storage
-    @State private var files: ExportFiles.Files?
-    @State private var importing = false
+    @State private var busy: Job?
+    @State private var shareItem: ShareItem?
+    @State private var choosingFile = false
     @State private var pendingBackup: Backup?
     @State private var message: String?
 
     var body: some View {
         Section {
-            if let files {
-                ShareLink(item: files.json) {
-                    Label("Export backup (JSON)", systemImage: "square.and.arrow.up")
-                }
-                ShareLink(item: files.csv) {
-                    Label("Export spreadsheet (CSV)", systemImage: "tablecells")
-                }
+            row("Export backup (JSON)", systemImage: "square.and.arrow.up", job: .export(.json)) {
+                export(.json)
             }
-            Button {
-                importing = true
-            } label: {
-                Label("Import backup (JSON)", systemImage: "square.and.arrow.down")
+            row("Export spreadsheet (CSV)", systemImage: "tablecells", job: .export(.csv)) {
+                export(.csv)
+            }
+            row("Import backup (JSON)", systemImage: "square.and.arrow.down", job: .importing) {
+                choosingFile = true
             }
         } header: {
             Text("Data")
         }
-        .task(id: storage.generation) {
-            files = try? ExportFiles.write(context: storage.container.mainContext)
+        .sheet(item: $shareItem, onDismiss: { busy = nil }) { item in
+            ActivityView(url: item.url)
+                .presentationDetents([.medium, .large])
+                .ignoresSafeArea()
+                .onAppear { busy = nil }
         }
-        .fileImporter(isPresented: $importing, allowedContentTypes: [.json]) { result in
+        .fileImporter(isPresented: $choosingFile, allowedContentTypes: [.json]) { result in
             read(result)
         }
         .confirmationDialog(
@@ -54,7 +59,41 @@ struct DataSection: View {
         }
     }
 
+    private func row(_ title: LocalizedStringKey, systemImage: String, job: Job, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack {
+                Label(title, systemImage: systemImage)
+                Spacer()
+                if busy == job {
+                    ProgressView()
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .disabled(busy != nil)
+    }
+
+    // MARK: Export
+
+    private func export(_ kind: ExportFiles.Kind) {
+        busy = .export(kind)
+        Task {
+            // Let the spinner render before the synchronous write.
+            try? await Task.sleep(for: .milliseconds(50))
+            do {
+                let url = try ExportFiles.write(kind, context: storage.container.mainContext)
+                shareItem = ShareItem(url: url)
+            } catch {
+                busy = nil
+                message = error.localizedDescription
+            }
+        }
+    }
+
+    // MARK: Import
+
     private func read(_ result: Result<URL, Error>) {
+        busy = .importing
         do {
             let url = try result.get()
             let accessing = url.startAccessingSecurityScopedResource()
@@ -63,16 +102,21 @@ struct DataSection: View {
         } catch {
             message = error.localizedDescription
         }
+        busy = nil
     }
 
     private func apply(_ backup: Backup, mode: Backup.ImportMode) {
-        do {
-            try backup.apply(to: storage.container.mainContext, mode: mode)
-            storage.service.refreshDerivedState()
-            files = try? ExportFiles.write(context: storage.container.mainContext)
-            message = String(localized: "Import complete.")
-        } catch {
-            message = error.localizedDescription
+        busy = .importing
+        Task {
+            try? await Task.sleep(for: .milliseconds(50))
+            do {
+                try backup.apply(to: storage.container.mainContext, mode: mode)
+                storage.service.refreshDerivedState()
+                message = String(localized: "Import complete.")
+            } catch {
+                message = error.localizedDescription
+            }
+            busy = nil
         }
     }
 }

@@ -65,7 +65,11 @@ final class StorageController {
         observeRemoteChanges()
     }
 
+    /// Whether iCloud can be offered at all (feature flag).
+    var isICloudOffered: Bool { FeatureFlags.iCloudSync }
+
     var isICloudAvailable: Bool {
+        guard isICloudOffered else { return false }
         #if DEBUG
         if CommandLine.arguments.contains("-forceICloudAvailable") { return true }
         #endif
@@ -78,6 +82,12 @@ final class StorageController {
         let context = container.mainContext
         if Deduplicator.run(in: context) { try? context.save() }
         service.refreshDerivedState()
+    }
+
+    /// With iCloud turned off, moves any data from an earlier iCloud session back to local.
+    func moveOffICloudIfDisabled() async {
+        guard !isICloudOffered, activeMode == .iCloud else { return }
+        try? await switchTo(.local)
     }
 
     /// Copies every habit and entry into the other store, verifies, then switches.
