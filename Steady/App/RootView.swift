@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct RootView: View {
     @Environment(AppState.self) private var appState
@@ -20,7 +21,9 @@ struct RootView: View {
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
             refresh()
         }
-        .preferredColorScheme(colorScheme)
+        .onChange(of: appState.appearance, initial: true) { _, appearance in
+            applyAppearance(appearance)
+        }
         .task {
             await storage.moveOffICloudIfDisabled()
             await store.start()
@@ -30,11 +33,16 @@ struct RootView: View {
         }
     }
 
-    private var colorScheme: ColorScheme? {
-        switch appState.appearance {
-        case .system: nil
+    /// Overrides the window style (not `preferredColorScheme`) so sheets that are
+    /// already open, like Settings, update immediately and "System" reverts cleanly.
+    private func applyAppearance(_ appearance: Appearance) {
+        let style: UIUserInterfaceStyle = switch appearance {
+        case .system: .unspecified
         case .light: .light
         case .dark: .dark
+        }
+        for scene in UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }) {
+            for window in scene.windows { window.overrideUserInterfaceStyle = style }
         }
     }
 
