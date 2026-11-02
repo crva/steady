@@ -7,7 +7,7 @@ struct StatsRow: View {
         HStack(alignment: .top) {
             item(Text(stats.currentStreak, format: .number), "Current streak")
             item(Text(stats.bestStreak, format: .number), "Best streak")
-            item(Text(HabitText.percent(stats.successRate)), "Success")
+            item(Text(CounterText.percent(stats.successRate)), "Success")
             item(Text(stats.successDays, format: .number), "Total days")
         }
     }

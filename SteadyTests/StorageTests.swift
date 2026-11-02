@@ -159,6 +159,17 @@ struct BackupTests {
         #expect(names.count == 2)
     }
 
+    @Test func replaceWithSameHabitsKeepsThem() throws {
+        _ = seed(source.mainContext)
+        let backup = Backup(context: source.mainContext)
+        let entryCount = try source.mainContext.fetchCount(FetchDescriptor<DayEntry>())
+
+        try backup.apply(to: source.mainContext, mode: .replace)
+        #expect(try source.mainContext.fetchCount(FetchDescriptor<Habit>()) == 2)
+        #expect(try source.mainContext.fetchCount(FetchDescriptor<DayEntry>()) == entryCount)
+        #expect(backup.isContained(in: source.mainContext))
+    }
+
     @Test func rejectsNewerSchemaAndGarbage() {
         let newer = Data(#"{"schemaVersion": 99, "exportedAt": "2026-11-02T00:00:00Z", "habits": []}"#.utf8)
         #expect(throws: Backup.BackupError.self) { try Backup.decode(newer) }

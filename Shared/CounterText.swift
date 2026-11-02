@@ -1,6 +1,6 @@
 import Foundation
 
-/// Counter wording shared by the app and widgets.
+/// Wording shared by the app and widgets.
 enum CounterText {
     /// Text after the big number: "day streak" or "days · 88%".
     static func label(value: Int, mode: CountingMode, successRate: Double?) -> String {
@@ -14,6 +14,17 @@ enum CounterText {
                 ? String(localized: "counter.days.one", defaultValue: "day", comment: "After the big number, which is 1")
                 : String(localized: "counter.days.other", defaultValue: "days", comment: "After the big number, which is not 1"))
                 + " · " + percent(successRate)
+        }
+    }
+
+    /// Lowercase day state, e.g. "done" or "slipped".
+    static func stateLabel(_ state: DayState, kind: HabitKind) -> String {
+        switch state {
+        case .success: kind == .start ? String(localized: "done") : String(localized: "clean")
+        case .failed: kind == .start ? String(localized: "failed") : String(localized: "slipped")
+        case .missed: String(localized: "missed")
+        case .pending: String(localized: "not logged yet")
+        case .notApplicable: String(localized: "not tracked")
         }
     }
 

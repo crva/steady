@@ -23,20 +23,9 @@ struct WidgetWeekRow: View {
     private func accessibilityLabel(days: [Int], states: [DayState]) -> String {
         zip(days, states).map { day, state in
             let weekday = DayKey.startOfDay(day).formatted(.dateTime.weekday(.wide))
-            return "\(weekday), \(stateLabel(state))"
+            return String(localized: "\(weekday), \(CounterText.stateLabel(state, kind: habit.rules.kind))")
         }
         .joined(separator: "; ")
-    }
-
-    private func stateLabel(_ state: DayState) -> String {
-        let isStart = habit.rules.kind == .start
-        switch state {
-        case .success: return isStart ? String(localized: "done") : String(localized: "clean")
-        case .failed: return isStart ? String(localized: "failed") : String(localized: "slipped")
-        case .missed: return String(localized: "missed")
-        case .pending: return String(localized: "not logged yet")
-        case .notApplicable: return String(localized: "not tracked")
-        }
     }
 }
 

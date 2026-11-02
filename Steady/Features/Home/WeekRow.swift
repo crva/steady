@@ -11,7 +11,7 @@ struct WeekRow: View {
 
     var body: some View {
         let days = DayKey.week(containing: today)
-        let letters = HabitText.weekdayLetters
+        let letters = CounterText.weekdayLetters
         HStack(spacing: 0) {
             ForEach(Array(days.enumerated()), id: \.element) { index, day in
                 let state = DayResolver.state(of: day, rules: habit.rules, results: results, today: today)

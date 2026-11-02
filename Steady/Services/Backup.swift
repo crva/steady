@@ -88,13 +88,14 @@ extension Backup {
     }
 
     func apply(to context: ModelContext, mode: ImportMode) throws {
-        if mode == .replace {
-            for habit in try context.fetch(FetchDescriptor<Habit>()) { context.delete(habit) }
+        let current = try context.fetch(FetchDescriptor<Habit>())
+        var existing: [UUID: Habit] = [:]
+        switch mode {
+        case .replace:
+            current.forEach(context.delete)
+        case .merge:
+            existing = Dictionary(current.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         }
-        let existing = Dictionary(
-            (try context.fetch(FetchDescriptor<Habit>())).map { ($0.id, $0) },
-            uniquingKeysWith: { first, _ in first }
-        )
         for record in habits {
             let habit = existing[record.id] ?? record.insert(into: context)
             record.mergeEntries(into: habit, context: context)

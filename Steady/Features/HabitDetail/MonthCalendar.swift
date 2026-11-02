@@ -17,11 +17,12 @@ struct MonthCalendar: View {
         let (year, monthNumber, _) = DayKey.components(month)
         let count = DayKey.daysInMonth(year: year, month: monthNumber)
         let leading = DayKey.weekdayIndex(month)
+        let letters = CounterText.weekdayLetters
 
         VStack(spacing: 8) {
             LazyVGrid(columns: columns, spacing: 6) {
-                ForEach(HabitText.weekdayLetters.indices, id: \.self) { index in
-                    Text(HabitText.weekdayLetters[index])
+                ForEach(letters.indices, id: \.self) { index in
+                    Text(letters[index])
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                         .accessibilityHidden(true)

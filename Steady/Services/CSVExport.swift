@@ -29,7 +29,7 @@ enum CSVExport {
 
             for day in DayKey.days(from: habit.startDay, through: today) {
                 let state = DayResolver.state(of: day, rules: rules, results: results, today: today)
-                let row = [name, isoDate(day), HabitText.stateLabel(state, kind: rules.kind), notes[day] ?? ""]
+                let row = [name, isoDate(day), CounterText.stateLabel(state, kind: rules.kind), notes[day] ?? ""]
                 lines.append(row.map(escape).joined(separator: ","))
             }
         }

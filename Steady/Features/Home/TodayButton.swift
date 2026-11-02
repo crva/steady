@@ -35,7 +35,7 @@ struct TodayButton: View {
     }
 
     private var accessibilityLabel: String {
-        String(localized: "Today, \(HabitText.stateLabel(state, kind: habit.kind))")
+        String(localized: "Today, \(CounterText.stateLabel(state, kind: habit.kind))")
     }
 
     private var accessibilityHint: String {
