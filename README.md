@@ -32,14 +32,6 @@ I couldn't find a tiny, simple habit tracker on the App Store. The ones I tried 
 - **Black and white by design.** Color comes only from your habits. True black in dark mode.
 - **In English, French, Spanish and German.**
 
-## Principles
-
-| | |
-|---|---|
-| **Small** | Under 5 MB. Pure SwiftUI, zero third-party dependencies. |
-| **Private** | No account, no analytics, no tracking. Steady collects no data. |
-| **Fair** | Every feature is free. One optional purchase adds cosmetic extras (icons and colors), never features. |
-
 <p align="center">
   <img src="docs/screenshots/settings.png" width="200" alt="Settings">
   <img src="docs/screenshots/detail-dark.png" width="200" alt="Habit detail in dark mode">
