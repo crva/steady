@@ -12,6 +12,7 @@ struct HabitFormView: View {
     @State private var draft = HabitDraft()
     @State private var loaded = false
     @State private var confirmingDelete = false
+    @State private var notifications: ReminderScheduler.Authorization?
 
     private var isEditing: Bool { habit != nil }
     private var today: Int { appState.todayKey }
@@ -115,7 +116,24 @@ struct HabitFormView: View {
             Toggle("Reminder", isOn: $draft.reminderEnabled)
             if draft.reminderEnabled {
                 DatePicker("Time", selection: $draft.reminderTime, displayedComponents: .hourAndMinute)
+                if notifications == .denied {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Notifications are turned off for Steady.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                        NotificationSettingsLink()
+                            .font(.footnote.weight(.semibold))
+                    }
+                }
             }
+        }
+        .task {
+            notifications = await ReminderScheduler.authorizationStatus()
+        }
+        .onChange(of: draft.reminderEnabled) { _, enabled in
+            // Ask the first time a reminder is turned on, never at launch.
+            guard enabled, loaded else { return }
+            Task { notifications = await ReminderScheduler.requestAuthorizationIfNeeded() }
         }
     }
 

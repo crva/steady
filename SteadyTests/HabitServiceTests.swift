@@ -6,7 +6,7 @@ import Testing
 @MainActor
 struct HabitServiceTests {
     let container = ModelContainerFactory.inMemory()
-    var service: HabitService { HabitService(context: container.mainContext) }
+    var service: HabitService { HabitService(context: container.mainContext, updatesSystem: false) }
     let today = 20261110
 
     private func draft(_ kind: HabitKind = .start, tracking: StopTracking = .auto, start: Int, backfill: Bool = false) -> HabitDraft {

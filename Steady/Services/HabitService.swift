@@ -8,9 +8,13 @@ import SwiftData
 @Observable
 final class HabitService {
     let context: ModelContext
+    /// Off in tests so they don't touch the real widget snapshot or notifications.
+    private let updatesSystem: Bool
+    private let reminders = ReminderScheduler()
 
-    init(context: ModelContext) {
+    init(context: ModelContext, updatesSystem: Bool = true) {
         self.context = context
+        self.updatesSystem = updatesSystem
     }
 
     // MARK: - Reading entries
@@ -174,10 +178,12 @@ final class HabitService {
         return (last?.sortOrder ?? -1) + 1
     }
 
-    /// Refreshes everything derived from the data: widget snapshot (and reminders in M5).
+    /// Refreshes everything derived from the data: widget snapshot and reminders.
     /// Also called on launch, foreground and day change.
     func refreshDerivedState() {
+        guard updatesSystem else { return }
         WidgetSnapshotWriter.write(context: context)
+        reminders.reschedule(context: context)
     }
 
     /// Runs after every data change.

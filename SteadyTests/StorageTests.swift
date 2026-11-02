@@ -71,7 +71,7 @@ struct BackupTests {
     let today = 20261110
 
     private func seed(_ context: ModelContext) -> Habit {
-        let service = HabitService(context: context)
+        let service = HabitService(context: context, updatesSystem: false)
         var draft = HabitDraft()
         draft.name = "Read, \"daily\""
         draft.emoji = "📚"
@@ -131,12 +131,12 @@ struct BackupTests {
         try Backup(context: source.mainContext).apply(to: destination.mainContext, mode: .merge)
 
         // Change one day in the destination later than the backup, then re-import.
-        let dest = HabitService(context: destination.mainContext)
+        let dest = HabitService(context: destination.mainContext, updatesSystem: false)
         let destHabit = try #require(try destination.mainContext.fetch(FetchDescriptor<Habit>(sortBy: [SortDescriptor(\.sortOrder)])).first)
         dest.setResult(.fail, for: destHabit, on: 20261105)
         // And add a new day in the source.
         let srcHabit = try #require(try source.mainContext.fetch(FetchDescriptor<Habit>(sortBy: [SortDescriptor(\.sortOrder)])).first)
-        HabitService(context: source.mainContext).setResult(.success, for: srcHabit, on: today)
+        HabitService(context: source.mainContext, updatesSystem: false).setResult(.success, for: srcHabit, on: today)
 
         try Backup(context: source.mainContext).apply(to: destination.mainContext, mode: .merge)
         let results = DayResolver.results(from: destHabit.entryRecords)
@@ -146,7 +146,7 @@ struct BackupTests {
     }
 
     @Test func replaceDeletesExistingHabits() throws {
-        let other = HabitService(context: destination.mainContext)
+        let other = HabitService(context: destination.mainContext, updatesSystem: false)
         var draft = HabitDraft()
         draft.name = "Old"
         draft.emoji = "🗑️"

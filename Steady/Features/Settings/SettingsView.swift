@@ -13,6 +13,7 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 StorageSection()
+                RemindersSection()
                 DataSection()
 
                 Section("Archived habits") {
