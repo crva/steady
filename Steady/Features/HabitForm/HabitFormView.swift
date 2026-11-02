@@ -8,6 +8,7 @@ struct HabitFormView: View {
 
     @Environment(AppState.self) private var appState
     @Environment(HabitService.self) private var service
+    @Environment(StoreController.self) private var store
     @Environment(\.dismiss) private var dismiss
     @State private var draft = HabitDraft()
     @State private var loaded = false
@@ -64,7 +65,7 @@ struct HabitFormView: View {
                 TextField("Name", text: $draft.name)
                     .font(.body)
             }
-            ColorSwatches(selection: $draft.color)
+            ColorSwatches(selection: $draft.color, colors: availableColors)
         }
     }
 
@@ -142,6 +143,11 @@ struct HabitFormView: View {
             Button("Archive") { archive() }
             Button("Delete", role: .destructive) { confirmingDelete = true }
         }
+    }
+
+    /// Supporter colors appear once unlocked, or if this habit already uses one.
+    private var availableColors: [PaletteColor] {
+        store.isSupporter || draft.color.isSupporter ? PaletteColor.allCases : PaletteColor.free
     }
 
     private func explanation(_ text: LocalizedStringKey) -> some View {

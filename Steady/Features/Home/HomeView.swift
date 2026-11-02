@@ -1,9 +1,12 @@
+import StoreKit
 import SwiftData
 import SwiftUI
 
 struct HomeView: View {
     @Environment(AppState.self) private var appState
     @Environment(HabitService.self) private var service
+    @Environment(StoreController.self) private var store
+    @Environment(\.requestReview) private var requestReview
     @Query(filter: #Predicate<Habit> { !$0.isArchived }, sort: \Habit.sortOrder)
     private var habits: [Habit]
 
@@ -46,6 +49,12 @@ struct HomeView: View {
         .sheet(item: $noteTarget) { target in
             NoteEditor(target: target)
         }
+        .onChange(of: longestCurrentStreak) { _, streak in
+            // Ask for a rating once, after the first 7-day streak.
+            guard streak >= 7, !appState.reviewRequested else { return }
+            appState.reviewRequested = true
+            requestReview()
+        }
         .onChange(of: appState.pendingDeepLink, initial: true) { _, link in
             guard let link else { return }
             open(link)
@@ -71,6 +80,19 @@ struct HomeView: View {
             emptyState
         } else {
             List {
+                if appState.shouldShowSupporterCard(isSupporter: store.isSupporter) {
+                    SupporterCard(
+                        onLearnMore: {
+                            appState.supporterCardSeen = true
+                            showingSettings = true
+                        },
+                        onDismiss: { appState.supporterCardSeen = true }
+                    )
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                    .moveDisabled(true)
+                }
                 ForEach(habits) { habit in
                     HabitCard(
                         habit: habit,
@@ -111,6 +133,13 @@ struct HomeView: View {
         .frame(maxWidth: .infinity)
     }
 
+    private var longestCurrentStreak: Int {
+        habits.map { habit in
+            HabitStats.compute(rules: habit.rules, entries: habit.entryRecords, today: appState.todayKey).currentStreak
+        }
+        .max() ?? 0
+    }
+
     private var title: String {
         DayKey.startOfDay(appState.todayKey).formatted(.dateTime.weekday(.wide).day().month(.wide))
     }
@@ -120,9 +149,11 @@ struct HomeView: View {
         let wasSlipped = service.entry(of: habit, on: today)?.result == .fail
         service.toggle(habit, on: today)
         if habit.rules.defaultsToSuccess, !wasSlipped {
-            undo = UndoAction(message: String(localized: "Slip logged")) {
+            let message = String(localized: "Slip logged")
+            undo = UndoAction(message: message) {
                 service.setResult(nil, for: habit, on: today)
             }
+            AccessibilityNotification.Announcement(message).post()
         }
     }
 }

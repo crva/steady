@@ -4,7 +4,13 @@ import SwiftUI
 struct HabitCounter: View {
     let stats: HabitStats
     let mode: CountingMode
-    var size: CGFloat = 34
+    @ScaledMetric private var size: CGFloat
+
+    init(stats: HabitStats, mode: CountingMode, size: CGFloat = 34) {
+        self.stats = stats
+        self.mode = mode
+        _size = ScaledMetric(wrappedValue: size, relativeTo: .largeTitle)
+    }
 
     private var value: Int { stats.primaryValue(for: mode) }
 

@@ -26,6 +26,8 @@ targets:
     platform: iOS
     sources:
       - path: Steady
+        excludes:
+          - "Resources/Steady.storekit"
       - path: Shared
     info:
       path: Steady/Info.plist
@@ -37,6 +39,7 @@ targets:
         CFBundleLocalizations: [en, fr, es, de]
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIRequiresFullScreen: true
         UIBackgroundModes: [remote-notification]
         ITSAppUsesNonExemptEncryption: false
         CFBundleURLTypes:
@@ -58,6 +61,8 @@ targets:
         PRODUCT_NAME: Steady
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES: AppIcon-Dark AppIcon-Teal AppIcon-Coral AppIcon-Indigo
+        ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: NO
     dependencies:
       - target: SteadyWidgets
 
@@ -109,5 +114,6 @@ schemes:
         - SteadyTests
     run:
       config: Debug
+      storeKitConfiguration: Steady/Resources/Steady.storekit
     archive:
       config: Release

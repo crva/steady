@@ -1,8 +1,8 @@
 import SwiftData
 import SwiftUI
 
-/// Settings. Appearance, reminders status and the Supporter pack arrive in later milestones.
 struct SettingsView: View {
+    @Environment(AppState.self) private var appState
     @Environment(HabitService.self) private var service
     @Environment(\.dismiss) private var dismiss
     @Query(filter: #Predicate<Habit> { $0.isArchived }, sort: \Habit.name)
@@ -10,9 +10,21 @@ struct SettingsView: View {
     @State private var pendingDelete: Habit?
 
     var body: some View {
+        @Bindable var appState = appState
         NavigationStack {
             Form {
                 StorageSection()
+
+                Section("Appearance") {
+                    Picker("Appearance", selection: $appState.appearance) {
+                        Text("System").tag(Appearance.system)
+                        Text("Light").tag(Appearance.light)
+                        Text("Dark").tag(Appearance.dark)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                }
+
                 RemindersSection()
                 DataSection()
 
@@ -34,10 +46,17 @@ struct SettingsView: View {
                     }
                 }
 
+                SupporterSection()
+
                 Section("About") {
                     LabeledContent("Version", value: Bundle.main.appVersion)
                     Text("Steady collects no data.")
                         .foregroundStyle(.secondary)
+                    if let mail = URL(string: "mailto:\(AppInfo.contactEmail)") {
+                        Link(destination: mail) {
+                            LabeledContent("Contact", value: AppInfo.contactEmail)
+                        }
+                    }
                 }
             }
             .steadyFormStyle()

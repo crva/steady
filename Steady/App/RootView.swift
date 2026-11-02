@@ -3,6 +3,7 @@ import SwiftUI
 struct RootView: View {
     @Environment(AppState.self) private var appState
     @Environment(StorageController.self) private var storage
+    @Environment(StoreController.self) private var store
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
@@ -19,11 +20,21 @@ struct RootView: View {
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
             refresh()
         }
+        .preferredColorScheme(colorScheme)
         .task {
             await storage.moveOffICloudIfDisabled()
+            await store.start()
         }
         .onOpenURL { url in
             appState.pendingDeepLink = DeepLink(url: url)
+        }
+    }
+
+    private var colorScheme: ColorScheme? {
+        switch appState.appearance {
+        case .system: nil
+        case .light: .light
+        case .dark: .dark
         }
     }
 

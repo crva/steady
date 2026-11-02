@@ -24,7 +24,9 @@ enum CounterText {
 
     /// Monday-first single-letter weekday symbols in the user's language.
     static var weekdayLetters: [String] {
-        let symbols = DayKey.calendar().veryShortStandaloneWeekdaySymbols  // Sunday first
+        var calendar = DayKey.calendar()
+        calendar.locale = .autoupdatingCurrent
+        let symbols = calendar.veryShortStandaloneWeekdaySymbols  // Sunday first
         return Array(symbols[1...]) + [symbols[0]]
     }
 }

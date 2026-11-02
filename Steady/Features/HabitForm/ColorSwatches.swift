@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ColorSwatches: View {
     @Binding var selection: PaletteColor
-    var colors: [PaletteColor] = PaletteColor.free
+    var colors: [PaletteColor]
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 6)
 

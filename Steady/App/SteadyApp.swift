@@ -5,6 +5,7 @@ import SwiftUI
 struct SteadyApp: App {
     @State private var appState: AppState
     @State private var storage: StorageController
+    @State private var store = StoreController()
 
     init() {
         let appState = AppState()
@@ -22,6 +23,7 @@ struct SteadyApp: App {
                 .id(storage.generation)
                 .environment(appState)
                 .environment(storage)
+                .environment(store)
                 .environment(storage.service)
                 .modelContainer(storage.container)
         }
