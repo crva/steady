@@ -5,7 +5,7 @@ import Testing
 
 @MainActor
 struct HabitServiceTests {
-    let container = ModelContainerFactory.preview()
+    let container = ModelContainerFactory.inMemory()
     var service: HabitService { HabitService(context: container.mainContext) }
     let today = 20261110
 

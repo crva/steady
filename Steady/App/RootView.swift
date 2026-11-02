@@ -2,7 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(AppState.self) private var appState
-    @Environment(HabitService.self) private var service
+    @Environment(StorageController.self) private var storage
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
@@ -26,6 +26,6 @@ struct RootView: View {
 
     private func refresh() {
         appState.refreshToday()
-        service.refreshDerivedState()
+        storage.refresh()
     }
 }

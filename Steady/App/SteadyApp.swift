@@ -4,32 +4,26 @@ import SwiftUI
 @main
 struct SteadyApp: App {
     @State private var appState: AppState
-    @State private var service: HabitService
-    private let container: ModelContainer
+    @State private var storage: StorageController
 
     init() {
         let appState = AppState()
-        let container: ModelContainer
-        do {
-            container = try ModelContainerFactory.make(for: appState.storageMode)
-        } catch {
-            fatalError("Could not open the data store: \(error)")
-        }
-        self.container = container
+        let storage = StorageController(appState: appState)
         _appState = State(initialValue: appState)
-        let service = HabitService(context: container.mainContext)
-        _service = State(initialValue: service)
+        _storage = State(initialValue: storage)
         #if DEBUG
-        DemoData.seedIfRequested(appState: appState, service: service)
+        DemoData.seedIfRequested(appState: appState, service: storage.service)
         #endif
     }
 
     var body: some Scene {
         WindowGroup {
             RootView()
+                .id(storage.generation)
                 .environment(appState)
-                .environment(service)
+                .environment(storage)
+                .environment(storage.service)
+                .modelContainer(storage.container)
         }
-        .modelContainer(container)
     }
 }

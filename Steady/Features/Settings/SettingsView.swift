@@ -1,10 +1,8 @@
 import SwiftData
 import SwiftUI
 
-/// Settings. Storage switching, appearance, export/import and the Supporter
-/// pack arrive in later milestones.
+/// Settings. Appearance, reminders status and the Supporter pack arrive in later milestones.
 struct SettingsView: View {
-    @Environment(AppState.self) private var appState
     @Environment(HabitService.self) private var service
     @Environment(\.dismiss) private var dismiss
     @Query(filter: #Predicate<Habit> { $0.isArchived }, sort: \Habit.name)
@@ -14,11 +12,8 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Storage") {
-                    if let mode = appState.storageMode {
-                        StorageOptionRow(mode: mode, isSelected: true)
-                    }
-                }
+                StorageSection()
+                DataSection()
 
                 Section("Archived habits") {
                     if archived.isEmpty {
